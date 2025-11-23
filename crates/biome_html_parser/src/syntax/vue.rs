@@ -82,6 +82,25 @@ pub(crate) fn parse_vue_v_on_shorthand_directive(p: &mut HtmlParser) -> ParsedSy
     Present(m.complete(p, VUE_V_ON_SHORTHAND_DIRECTIVE))
 }
 
+pub(crate) fn parse_vue_v_slot_shorthand_directive(p: &mut HtmlParser) -> ParsedSyntax {
+    if !p.at(T![#]) {
+        return Absent;
+    }
+
+    let m = p.start();
+
+    p.bump_with_context(T![#], HtmlLexContext::InsideTagVue);
+    parse_vue_dynamic_argument(p)
+        .or_else(|| parse_vue_static_argument(p))
+        .ok();
+    VueModifierList.parse_list(p);
+    if p.at(T![=]) {
+        parse_attribute_initializer(p).ok();
+    }
+
+    Present(m.complete(p, VUE_V_SLOT_SHORTHAND_DIRECTIVE))
+}
+
 fn parse_vue_directive_argument(p: &mut HtmlParser) -> ParsedSyntax {
     if !p.at(T![:]) {
         return Absent;
